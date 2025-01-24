@@ -1,54 +1,88 @@
-# TED Üniversitesi Ders Seçim Sistemi
+# 📘 TED University Course Selection System
 
-Bu uygulama, TED Üniversitesi öğrencilerinin ders programlarını oluşturmalarına yardımcı olmak için geliştirilmiş bir web uygulamasıdır.
+Welcome to the **TED University Course Selection System**! This web application is designed to help students at TED University create their course schedules efficiently and effortlessly. 🎓✨
 
-## Özellikler
+---
 
-- Ders arama ve filtreleme
-- Haftalık program görüntüleme
-- Otomatik kombinasyon oluşturma
-- Çakışma kontrolü
-- Öğretim üyesi ve section bazlı filtreleme
-- Boş zaman dilimi bloklaması
-- Klavye kısayolları ile kolay navigasyon
+## 🌟 Features
 
-## Kurulum
+- 🔍 **Search and Filter Courses**: Quickly find the courses you need.
+- 🗓️ **Weekly Schedule View**: Visualize your weekly timetable.
+- 🤖 **Automatic Combination Generator**: Generate possible course combinations automatically.
+- 🚨 **Conflict Checker**: Avoid scheduling conflicts.
+- 👩‍🏫 **Filter by Instructor and Section**: Narrow down your options easily.
+- ⏰ **Block Free Time Slots**: Reserve specific times for breaks or personal activities.
+- ⌨️ **Keyboard Shortcuts**: Navigate the app with ease.
 
-1. Gerekli paketleri yükleyin:
+---
+
+## 🚀 Getting Started
+
+### 1️⃣ Installation
+
+Install the required packages:
+
 ```bash
 npm install
 ```
 
-2. Geliştirme sunucusunu başlatın:
+### 2️⃣ Run Development Server
+
+Start the development server:
+
 ```bash
 npm start
 ```
 
-3. Production build oluşturun:
+### 3️⃣ Create Production Build
+
+Generate the production build:
+
 ```bash
 npm run build
 ```
 
-## Deployment
+---
 
-Production build'i oluşturduktan sonra `build` klasöründeki dosyaları web sunucunuza yükleyin.
+## 🌐 Deployment
 
-### Gereksinimler
+After creating the production build, upload the contents of the `build` folder to your web server.
 
-- Node.js 14.0.0 veya üzeri
-- npm 6.0.0 veya üzeri
+---
 
-### Dosya Yapısı
+## 🛠️ Requirements
 
-- `public/` - Statik dosyalar
-  - `Courses.csv` - Ders verileri
-  - `index.html` - Ana HTML dosyası
-- `src/` - Kaynak kodlar
-  - `App.jsx` - Ana uygulama bileşeni
-  - `index.js` - Giriş noktası
+- **Node.js**: Version 14.0.0 or higher
+- **npm**: Version 6.0.0 or higher
 
-## Klavye Kısayolları
+---
 
-- `←` (Sol Ok): Önceki kombinasyon
-- `→` (Sağ Ok): Sonraki kombinasyon
-- `Alt + R`: Tüm dersleri kaldır
+## 📂 File Structure
+
+```
+.
+├── public/
+│   ├── Courses.csv       # Course data
+│   ├── index.html        # Main HTML file
+├── src/
+│   ├── App.jsx           # Main application component
+│   ├── index.js          # Entry point
+```
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+- `←` (Left Arrow): Navigate to the previous combination
+- `→` (Right Arrow): Navigate to the next combination
+- `Alt + R`: Clear all selected courses
+
+---
+
+## 🖼️ Example Screenshot
+
+![TED University Course Selection System Screenshot](./public/screenshot.png)
+
+---
+
+We hope this system makes your course selection process smooth and enjoyable! If you encounter any issues or have suggestions, feel free to reach out. 🚀🎓
