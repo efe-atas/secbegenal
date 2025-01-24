@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Container, 
   TextField, 
@@ -24,7 +24,8 @@ import {
   DialogActions,
   IconButton,
   Popover,
-  Alert
+  Alert,
+  Slider
 } from '@mui/material';
 import { 
   ArrowBack, 
@@ -32,9 +33,12 @@ import {
   Search as SearchIcon, 
   Autorenew as AutorenewIcon,
   FilterList as FilterListIcon,
-  FilterListOff as FilterListOffIcon
+  FilterListOff as FilterListOffIcon,
+  Close as CloseIcon,
+  CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import Papa from 'papaparse';
+import html2canvas from 'html2canvas';
 
 const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 9); // 9:00 - 21:00
@@ -44,13 +48,28 @@ const COURSE_COLORS = [
   '#D42E12', // TED Kırmızı
   '#002379', // TED Lacivert
   '#F7D417', // TED Sarı
-  '#D42E12CC', // TED Kırmızı (80% opaklık)
-  '#002379CC', // TED Lacivert (80% opaklık)
-  '#F7D417CC', // TED Sarı (80% opaklık)
-  '#D42E1299', // TED Kırmızı (60% opaklık)
-  '#00237999', // TED Lacivert (60% opaklık)
-  '#F7D41799', // TED Sarı (60% opaklık)
-  '#D42E1266', // TED Kırmızı (40% opaklık)
+  '#2E7D32', // Koyu Yeşil
+  '#7B1FA2', // Mor
+  '#0288D1', // Mavi
+  '#FF5722', // Turuncu
+  '#C2185B', // Pembe
+  '#00BFA5', // Turkuaz
+  '#FFA000', // Amber
+  '#9C27B0', // Mor
+  '#3F51B5', // İndigo
+  '#E91E63', // Pembe
+  '#009688', // Yeşil
+  '#FF3D00', // Turuncu
+  '#673AB7', // Mor
+  '#4CAF50', // Yeşil
+  '#2196F3', // Mavi
+  '#FF9800', // Turuncu
+  '#8BC34A', // Açık Yeşil
+  '#1976D2', // Mavi
+  '#F44336', // Kırmızı
+  '#03A9F4', // Açık Mavi
+  '#FF4081', // Pembe
+  '#00BCD4'  // Camgöbeği
 ];
 
 // Tema renkleri
@@ -183,6 +202,8 @@ function App() {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('warning');
   const [allowConflicts, setAllowConflicts] = useState(false); // Çakışmalara izin verme durumu
+  const [desiredEmptyDays, setDesiredEmptyDays] = useState(0);
+  const scheduleRef = useRef(null);
 
   useEffect(() => {
     // CSV dosyasını oku
@@ -219,19 +240,16 @@ function App() {
   const generateAllPossibleCombinations = () => {
     const courseSectionsMap = {};
     selectedCourseCodes.forEach(code => {
-      let sections = courses.filter(c => c.Code === code);
+      let courseSections = courses.filter(c => c.Code === code);
       
       if (courseFilters[code]) {
-        const { lecturer, section } = courseFilters[code];
-        if (lecturer) {
-          sections = sections.filter(c => c.Lecturer === lecturer);
-        }
-        if (section) {
-          sections = sections.filter(c => c.Section === section);
+        const { sections } = courseFilters[code];
+        if (sections && sections.length > 0) {
+          courseSections = courseSections.filter(c => sections.includes(c.Section));
         }
       }
       
-      courseSectionsMap[code] = sections;
+      courseSectionsMap[code] = courseSections;
     });
 
     let allCombinations = [[]];
@@ -319,7 +337,11 @@ function App() {
   };
 
   const handleCourseSelect = (course) => {
-    if (!selectedCourseCodes.includes(course.Code)) {
+    if (selectedCourseCodes.includes(course.Code)) {
+      // Eğer ders zaten seçiliyse, seçimi kaldır
+      handleCourseRemove(course.Code);
+    } else {
+      // Ders seçili değilse, seç
       assignCourseColor(course.Code);
       setSelectedCourseCodes(prev => [...prev, course.Code]);
     }
@@ -346,39 +368,7 @@ function App() {
     const remainingCourses = selectedCourseCodes.filter(code => code !== courseCode);
     if (remainingCourses.length > 0) {
       setTimeout(() => {
-        const courseSectionsMap = {};
-        remainingCourses.forEach(code => {
-          courseSectionsMap[code] = courses.filter(c => c.Code === code);
-        });
-
-        let allCombinations = [[]];
-        Object.values(courseSectionsMap).forEach(sections => {
-          const newCombinations = [];
-          allCombinations.forEach(combo => {
-            sections.forEach(section => {
-              const newCombo = [...combo, section];
-              let hasConflict = false;
-              for (let i = 0; i < newCombo.length; i++) {
-                for (let j = i + 1; j < newCombo.length; j++) {
-                  if (checkTimeConflict(
-                    parseSchedule(newCombo[i].Schedule),
-                    parseSchedule(newCombo[j].Schedule)
-                  )) {
-                    hasConflict = true;
-                    break;
-                  }
-                }
-                if (hasConflict) break;
-              }
-              if (!hasConflict) {
-                newCombinations.push(newCombo);
-              }
-            });
-          });
-          allCombinations = newCombinations;
-        });
-
-        setCombinations(allCombinations);
+        generateAllPossibleCombinations();
       }, 0);
     }
   };
@@ -387,14 +377,28 @@ function App() {
   const assignCourseColor = (courseCode) => {
     if (!courseColors[courseCode]) {
       const usedColors = Object.values(courseColors);
-      const availableColors = COURSE_COLORS.filter(color => !usedColors.includes(color));
-      const randomColor = availableColors[0] || COURSE_COLORS[0];
-      setCourseColors(prev => ({ ...prev, [courseCode]: randomColor }));
+      let availableColors = COURSE_COLORS.filter(color => !usedColors.includes(color));
+      
+      // Eğer tüm renkler kullanılmışsa, renkleri karıştırıp yeniden kullan
+      if (availableColors.length === 0) {
+        availableColors = [...COURSE_COLORS];
+        // Renkleri karıştır
+        for (let i = availableColors.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [availableColors[i], availableColors[j]] = [availableColors[j], availableColors[i]];
+        }
+      }
+      
+      // Rastgele bir renk seç
+      const randomIndex = Math.floor(Math.random() * availableColors.length);
+      const selectedColor = availableColors[randomIndex];
+      
+      setCourseColors(prev => ({ ...prev, [courseCode]: selectedColor }));
     }
   };
 
   const renderTimeSlot = (day, hour, courses) => {
-    if (!courses || courses.length === 0) {
+    if (!courses || courses.length === 0 || selectedCourseCodes.length === 0) {
       return null;
     }
 
@@ -482,62 +486,203 @@ function App() {
     setCurrentCombinationIndex(0);
   };
 
-  const getFilteredCombinations = () => {
-    if (!combinations.length) return [];
-    
-    return combinations.filter(combo => {
-      // Önce mevcut filtreleri kontrol et
-      for (const courseCode in courseFilters) {
-        const course = combo.find(c => c.Code === courseCode);
-        if (!course) continue;
+  // Bir günün tamamen boş olup olmadığını kontrol eden fonksiyon
+  const isDayEmpty = (day, combination) => {
+    if (!combination || combination.length === 0) return true;
+    return !combination.some(course => {
+      const schedule = parseSchedule(course.Schedule);
+      return schedule.some(slot => slot.day === day);
+    });
+  };
 
-        const filter = courseFilters[courseCode];
-        if (filter.lecturer && course.Lecturer !== filter.lecturer) return false;
-        if (filter.section && course.Section !== filter.section) return false;
+  // Bir kombinasyondaki boş gün sayısını hesaplayan fonksiyon
+  const countEmptyDays = (combination) => {
+    if (!combination || combination.length === 0) return DAYS.length;
+    return DAYS.filter(day => isDayEmpty(day, combination)).length;
+  };
+
+  // Tüm filtreleme mantığını tek bir fonksiyonda toplama
+  const applyAllFilters = (combinations) => {
+    if (!combinations || combinations.length === 0) return [];
+
+    // 1. Çakışma kontrolü
+    let filtered = allowConflicts ? combinations : combinations.filter(combo => {
+      for (let i = 0; i < combo.length; i++) {
+        for (let j = i + 1; j < combo.length; j++) {
+          if (checkTimeConflict(
+            parseSchedule(combo[i].Schedule),
+            parseSchedule(combo[j].Schedule)
+          )) {
+            return false;
+          }
+        }
       }
+      return true;
+    });
 
-      // Sonra bloklanmış zaman dilimlerini kontrol et
-      if (blockedTimeSlots.length > 0) {
+    // 2. Bloklanmış zaman dilimleri kontrolü
+    if (blockedTimeSlots.length > 0) {
+      filtered = filtered.filter(combo => {
         for (const course of combo) {
-          const schedules = parseSchedule(course.Schedule);
-          for (const schedule of schedules) {
-            for (let hour = schedule.start; hour < schedule.end; hour++) {
-              const timeSlot = `${schedule.day}-${hour}`;
-              if (blockedTimeSlots.includes(timeSlot)) {
+          const schedule = parseSchedule(course.Schedule);
+          for (const slot of schedule) {
+            for (const blockedSlot of blockedTimeSlots) {
+              const [blockedDay, blockedHourStr] = blockedSlot.split('-');
+              const blockedHour = parseInt(blockedHourStr);
+              if (
+                slot.day === blockedDay &&
+                slot.start <= blockedHour &&
+                slot.end > blockedHour
+              ) {
                 return false;
               }
             }
           }
         }
+        return true;
+      });
+    }
+
+    // 3. Kurs filtreleri kontrolü
+    if (Object.keys(courseFilters).length > 0) {
+      filtered = filtered.filter(combo => {
+        for (const courseCode in courseFilters) {
+          const filter = courseFilters[courseCode];
+          const course = combo.find(c => c.Code === courseCode);
+          
+          if (!course) continue;
+
+          if (filter.sections && filter.sections.length > 0 && !filter.sections.includes(course.Section)) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    // 4. Boş gün kontrolü
+    if (desiredEmptyDays > 0) {
+      filtered = filtered.filter(combo => {
+        const emptyDays = countEmptyDays(combo);
+        return emptyDays >= desiredEmptyDays;
+      });
+    }
+
+    return filtered;
+  };
+
+  // Kombinasyonları filtrele ve state'i güncelle
+  const updateFilteredCombinations = () => {
+    const filtered = applyAllFilters(combinations);
+    
+    if (filtered.length === 0 && combinations.length > 0) {
+      if (desiredEmptyDays > 0) {
+        setAlertMessage(`${desiredEmptyDays} boş gün içeren program kombinasyonu bulunamadı.`);
+        setAlertSeverity('warning');
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+      } else {
+        setAlertMessage('Seçilen filtrelerle uygun kombinasyon bulunamadı.');
+        setAlertSeverity('warning');
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
       }
+    }
 
-      return true;
-    });
+    // Geçerli kombinasyon indeksini güncelle
+    if (currentCombinationIndex >= filtered.length) {
+      setCurrentCombinationIndex(Math.max(0, filtered.length - 1));
+    }
+
+    return filtered;
   };
 
-  const filteredCombinations = getFilteredCombinations();
+  // Boş gün seçici bileşeni
+  const EmptyDaySelector = () => {
+    const handleSliderChange = (_, newValue) => {
+      if (newValue === desiredEmptyDays) return;
+      
+      setDesiredEmptyDays(newValue);
+      setShowAlert(false);
+      
+      // Yeni değerle filtrelemeyi dene
+      const filtered = applyAllFilters(combinations);
+      if (filtered.length === 0 && newValue > 0) {
+        // Eğer uygun kombinasyon bulunamazsa eski değere geri dön
+        setDesiredEmptyDays(prevValue => {
+          setAlertMessage(`${newValue} boş gün içeren program kombinasyonu bulunamadı.`);
+          setAlertSeverity('warning');
+          setShowAlert(true);
+          setTimeout(() => setShowAlert(false), 3000);
+          return prevValue;
+        });
+      }
+    };
 
-  const handlePrevCombination = () => {
-    setCurrentCombinationIndex(prev => 
-      prev > 0 ? prev - 1 : filteredCombinations.length - 1
+    return (
+      <Box sx={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: theme.borderRadius.medium,
+        padding: '8px 16px'
+      }}>
+        <Typography sx={{
+          color: theme.colors.text.light,
+          fontSize: '0.9rem',
+          minWidth: '120px'
+        }}>
+          Boş Gün: {desiredEmptyDays}
+        </Typography>
+        <Slider
+          value={desiredEmptyDays}
+          onChange={handleSliderChange}
+          step={1}
+          marks
+          min={0}
+          max={6}
+          valueLabelDisplay="auto"
+          disabled={combinations.length === 0}
+          sx={{
+            color: 'white',
+            '& .MuiSlider-thumb': {
+              backgroundColor: 'white',
+            },
+            '& .MuiSlider-track': {
+              backgroundColor: 'white',
+            },
+            '& .MuiSlider-rail': {
+              backgroundColor: 'rgba(255,255,255,0.3)',
+            },
+            '& .MuiSlider-mark': {
+              backgroundColor: 'white',
+            },
+            '& .MuiSlider-markLabel': {
+              color: 'white',
+            }
+          }}
+        />
+      </Box>
     );
   };
 
-  const handleNextCombination = () => {
-    setCurrentCombinationIndex(prev => 
-      prev < filteredCombinations.length - 1 ? prev + 1 : 0
-    );
-  };
+  // Filtreleme değişikliklerini izle
+  useEffect(() => {
+    if (combinations.length > 0) {
+      const filtered = updateFilteredCombinations();
+      if (currentCombinationIndex >= filtered.length) {
+        setCurrentCombinationIndex(Math.max(0, filtered.length - 1));
+      }
+    }
+  }, [desiredEmptyDays, allowConflicts, blockedTimeSlots.length, courseFilters]);
+
+  const filteredCombinations = useMemo(() => {
+    return updateFilteredCombinations();
+  }, [combinations, desiredEmptyDays, allowConflicts, blockedTimeSlots, courseFilters]);
 
   // Filtreleme bileşenleri için gerekli fonksiyonlar
-  const getUniqueLecturers = (courseCode) => {
-    return [...new Set(courses
-      .filter(c => c.Code === courseCode)
-      .map(c => c.Lecturer))]
-      .filter(Boolean)
-      .sort();
-  };
-
   const getUniqueSections = (courseCode, selectedLecturer = '') => {
     return [...new Set(courses
       .filter(c => c.Code === courseCode && (!selectedLecturer || c.Lecturer === selectedLecturer))
@@ -551,46 +696,21 @@ function App() {
       const newFilters = { ...prev };
       
       if (!newFilters[courseCode]) {
-        newFilters[courseCode] = {};
+        newFilters[courseCode] = { sections: [] };
       }
 
-      if (type === 'lecturer') {
-        const selectedLecturer = value;
-        if (selectedLecturer) {
-          // Öğretim üyesi seçildiğinde
-          newFilters[courseCode].lecturer = selectedLecturer;
-          
-          // Mevcut section'ın bu öğretim üyesine ait olup olmadığını kontrol et
-          const currentSection = newFilters[courseCode]?.section;
-          if (currentSection) {
-            const isValidSection = courses.some(c => 
-              c.Code === courseCode && 
-              c.Lecturer === selectedLecturer && 
-              c.Section === currentSection
-            );
-            if (!isValidSection) {
-              // Eğer section bu öğretim üyesine ait değilse, section'ı temizle
-              newFilters[courseCode].section = '';
-            }
-          }
-        } else {
-          // "Tümü" seçildiğinde sadece öğretim üyesini temizle
-          newFilters[courseCode].lecturer = '';
-        }
-      } else if (type === 'section') {
-        const selectedSection = value;
-        if (selectedSection) {
-          // Section seçildiğinde
-          const course = courses.find(c => c.Code === courseCode && c.Section === selectedSection);
-          if (course) {
-            // Section'a ait öğretim üyesini otomatik seç
-            newFilters[courseCode].section = selectedSection;
-            newFilters[courseCode].lecturer = course.Lecturer;
-          }
-        } else {
-          // "Tümü" seçildiğinde sadece section'ı temizle
-          newFilters[courseCode].section = '';
-        }
+      const selectedSection = value;
+      const currentSections = newFilters[courseCode].sections || [];
+      
+      if (selectedSection === '') {
+        // "Tümü" seçildiyse tüm seçimleri temizle
+        newFilters[courseCode].sections = [];
+      } else if (currentSections.includes(selectedSection)) {
+        // Eğer section zaten seçiliyse, listeden çıkar
+        newFilters[courseCode].sections = currentSections.filter(s => s !== selectedSection);
+      } else {
+        // Değilse listeye ekle
+        newFilters[courseCode].sections = [...currentSections, selectedSection];
       }
       
       return newFilters;
@@ -607,9 +727,8 @@ function App() {
   // Filtre bileşenlerinin render edilmesi
   const renderFilters = (code) => {
     const course = courses.find(c => c.Code === code);
-    const filters = courseFilters[code] || {};
-    const lecturers = getUniqueLecturers(code);
-    const sections = getUniqueSections(code, filters.lecturer);
+    const filters = courseFilters[code] || { sections: [] };
+    const sections = getUniqueSections(code);
 
     return (
       <Paper key={code} elevation={0} sx={{
@@ -618,64 +737,139 @@ function App() {
         border: '1px solid rgba(0,0,0,0.1)',
         backgroundColor: `${courseColors[code]}11`
       }}>
-        <Typography sx={{
-          fontWeight: 600,
-          mb: 2,
-          color: theme.colors.text.primary
+        {/* Ders Başlığı */}
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2
         }}>
-          {code} - {course?.Name}
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Öğretim Üyesi</InputLabel>
-              <Select
-                value={filters.lecturer || ''}
-                label="Öğretim Üyesi"
-                onChange={(e) => handleCourseFilter(code, 'lecturer', e.target.value)}
-                sx={{
-                  borderRadius: theme.borderRadius.small,
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(0,0,0,0.1)'
+          <Typography sx={{
+            fontWeight: 600,
+            color: theme.colors.text.primary,
+            fontSize: '1rem'
+          }}>
+            {code}
+          </Typography>
+          <Typography sx={{
+            color: theme.colors.text.secondary,
+            fontSize: '0.9rem',
+            maxWidth: '70%',
+            textAlign: 'right'
+          }}>
+            {course?.Name}
+          </Typography>
+        </Box>
+
+        {/* Section Seçimi */}
+        <Box sx={{
+          backgroundColor: 'rgba(0,0,0,0.02)',
+          borderRadius: theme.borderRadius.medium,
+          p: 2
+        }}>
+          <Typography variant="subtitle2" sx={{ 
+            mb: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            color: theme.colors.text.primary,
+            fontWeight: 600
+          }}>
+            Section ve Öğretim Üyesi
+            <Typography variant="caption" sx={{ 
+              color: theme.colors.text.secondary,
+              fontWeight: 400
+            }}>
+              (Birden fazla seçilebilir)
+            </Typography>
+          </Typography>
+          <Box sx={{ 
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1
+          }}>
+            <Chip
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  Tümü
+                  {filters.sections.length === 0 && (
+                    <CheckCircleIcon sx={{ 
+                      fontSize: '0.9rem',
+                      color: theme.colors.primary,
+                      ml: 0.5
+                    }} />
+                  )}
+                </Box>
+              }
+              onClick={() => handleCourseFilter(code, 'section', '')}
+              variant={filters.sections.length === 0 ? "filled" : "outlined"}
+              size="small"
+              sx={{
+                backgroundColor: filters.sections.length === 0
+                  ? `${courseColors[code]}33`
+                  : 'transparent',
+                borderColor: filters.sections.length === 0
+                  ? 'transparent'
+                  : 'rgba(0,0,0,0.1)',
+                color: filters.sections.length === 0
+                  ? theme.colors.text.primary
+                  : theme.colors.text.secondary,
+                fontWeight: filters.sections.length === 0 ? 500 : 400,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: filters.sections.length === 0
+                    ? `${courseColors[code]}44`
+                    : 'rgba(0,0,0,0.05)',
+                  transform: 'translateY(-1px)'
+                }
+              }}
+            />
+            {sections.map(section => {
+              const sectionInfo = courses.find(c => c.Code === code && c.Section === section);
+              const isSelected = filters.sections.includes(section);
+
+              return (
+                <Chip
+                  key={section}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {`${section} - ${sectionInfo?.Lecturer}`}
+                      {isSelected && (
+                        <CheckCircleIcon sx={{ 
+                          fontSize: '0.9rem',
+                          color: theme.colors.primary,
+                          ml: 0.5
+                        }} />
+                      )}
+                    </Box>
                   }
-                }}
-              >
-                <MenuItem value="">Tümü</MenuItem>
-                {lecturers.map(lecturer => (
-                  <MenuItem key={lecturer} value={lecturer}>
-                    {lecturer}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Section</InputLabel>
-              <Select
-                value={filters.section || ''}
-                label="Section"
-                onChange={(e) => handleCourseFilter(code, 'section', e.target.value)}
-                sx={{
-                  borderRadius: theme.borderRadius.small,
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(0,0,0,0.1)'
-                  }
-                }}
-              >
-                <MenuItem value="">Tümü</MenuItem>
-                {sections.map(section => {
-                  const sectionInfo = courses.find(c => c.Code === code && c.Section === section);
-                  return (
-                    <MenuItem key={section} value={section}>
-                      {section} - {sectionInfo?.Lecturer}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
+                  onClick={() => handleCourseFilter(code, 'section', section)}
+                  variant={isSelected ? "filled" : "outlined"}
+                  size="small"
+                  sx={{
+                    backgroundColor: isSelected
+                      ? `${courseColors[code]}33`
+                      : 'transparent',
+                    borderColor: isSelected
+                      ? 'transparent'
+                      : 'rgba(0,0,0,0.1)',
+                    color: isSelected
+                      ? theme.colors.text.primary
+                      : theme.colors.text.secondary,
+                    fontWeight: isSelected ? 500 : 400,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      backgroundColor: isSelected
+                        ? `${courseColors[code]}44`
+                        : 'rgba(0,0,0,0.05)',
+                      transform: 'translateY(-1px)'
+                    }
+                  }}
+                />
+              );
+            })}
+          </Box>
+        </Box>
       </Paper>
     );
   };
@@ -704,6 +898,49 @@ function App() {
     setSelectedCombination(null);
     setCombinations([]);
     setCurrentCombinationIndex(0);
+    // Seçili kombinasyonu sıfırla
+    setFilteredCombinations([]);
+  };
+
+  const handleScreenshot = async () => {
+    if (scheduleRef.current) {
+      try {
+        const canvas = await html2canvas(scheduleRef.current, {
+          backgroundColor: theme.colors.surface,
+          scale: 2, // Daha yüksek kalite için
+        });
+        
+        // Canvas'ı PNG olarak kaydet
+        const image = canvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = 'ders-programi.png';
+        link.click();
+        
+        // Başarı mesajı göster
+        setAlertMessage('Program başarıyla kaydedildi!');
+        setAlertSeverity('success');
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+      } catch (error) {
+        console.error('Screenshot error:', error);
+        setAlertMessage('Program kaydedilirken bir hata oluştu.');
+        setAlertSeverity('error');
+        setShowAlert(true);
+      }
+    }
+  };
+
+  const handlePrevCombination = () => {
+    setCurrentCombinationIndex(prev => 
+      prev > 0 ? prev - 1 : filteredCombinations.length - 1
+    );
+  };
+
+  const handleNextCombination = () => {
+    setCurrentCombinationIndex(prev => 
+      prev < filteredCombinations.length - 1 ? prev + 1 : 0
+    );
   };
 
   return (
@@ -730,6 +967,18 @@ function App() {
       },
       animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
     }}>
+      {/* Son Güncelleme Tarihi */}
+      <Typography sx={{
+        position: 'absolute',
+        top: 8,
+        left: 16,
+        fontSize: '0.75rem',
+        color: theme.colors.text.secondary,
+        fontStyle: 'italic'
+      }}>
+        Son güncelleme: 24/01/2025
+      </Typography>
+
       {/* Header Section */}
       <Box sx={{
         position: 'relative',
@@ -897,189 +1146,254 @@ function App() {
               background: theme.gradients.mixed,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              flexDirection: 'column',
+              gap: 1
             }}>
               <Box sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 2
+                justifyContent: 'space-between',
+                width: '100%'
               }}>
-                <Typography sx={{
-                  color: theme.colors.text.light,
-                  fontWeight: 600,
-                  fontSize: '1rem'
-                }}>
-                  Haftalık Program
-                </Typography>
-                <Button
-                  size="small"
-                  variant={allowConflicts ? "contained" : "outlined"}
-                  onClick={() => setAllowConflicts(!allowConflicts)}
-                  sx={{
-                    minWidth: 'auto',
-                    padding: '4px 8px',
-                    fontSize: '0.75rem',
-                    borderRadius: theme.borderRadius.medium,
-                    backgroundColor: allowConflicts ? 'rgba(255,255,255,0.2)' : 'transparent',
-                    borderColor: 'rgba(255,255,255,0.5)',
-                    color: theme.colors.text.light,
-                    '&:hover': {
-                      backgroundColor: allowConflicts ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'
-                    }
-                  }}
-                >
-                  {allowConflicts ? "Çakışmalara İzin Veriliyor" : "Çakışmalara İzin Ver"}
-                </Button>
-              </Box>
-              {filteredCombinations.length > 0 && (
                 <Box sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.5,
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  borderRadius: '16px',
-                  padding: '2px 8px'
+                  gap: 2
                 }}>
-                  <IconButton
-                    size="small"
-                    onClick={handlePrevCombination}
-                    sx={{
-                      padding: '4px',
-                      color: theme.colors.text.light,
-                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.2)'
-                      }
-                    }}
-                  >
-                    <ArrowBack fontSize="small" />
-                  </IconButton>
                   <Typography sx={{
                     color: theme.colors.text.light,
-                    fontWeight: 500,
-                    fontSize: '0.85rem'
+                    fontWeight: 600,
+                    fontSize: '1rem'
                   }}>
-                    {currentCombinationIndex + 1} / {filteredCombinations.length}
+                    Haftalık Program
                   </Typography>
-                  <IconButton
+                  <Button
                     size="small"
-                    onClick={handleNextCombination}
+                    variant={allowConflicts ? "contained" : "outlined"}
+                    onClick={() => setAllowConflicts(!allowConflicts)}
                     sx={{
-                      padding: '4px',
+                      minWidth: 'auto',
+                      padding: '4px 8px',
+                      fontSize: '0.75rem',
+                      borderRadius: theme.borderRadius.medium,
+                      backgroundColor: allowConflicts ? 'rgba(255,255,255,0.2)' : 'transparent',
+                      borderColor: 'rgba(255,255,255,0.5)',
                       color: theme.colors.text.light,
                       '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.2)'
+                        backgroundColor: allowConflicts ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'
                       }
                     }}
                   >
-                    <ArrowForward fontSize="small" />
-                  </IconButton>
+                    {allowConflicts ? "Çakışmalara İzin Veriliyor" : "Çakışmalara İzin Ver"}
+                  </Button>
                 </Box>
-              )}
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2
+                }}>
+                  {/* Ekran görüntüsü alma butonu */}
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={handleScreenshot}
+                    sx={{
+                      minWidth: 'auto',
+                      padding: '4px 12px',
+                      fontSize: '0.75rem',
+                      borderRadius: theme.borderRadius.medium,
+                      borderColor: 'rgba(255,255,255,0.5)',
+                      color: theme.colors.text.light,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.1)'
+                      }
+                    }}
+                  >
+                    Programı Kaydet
+                  </Button>
+                  {filteredCombinations.length > 0 ? (
+                    <Box sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      backgroundColor: 'rgba(255,255,255,0.1)',
+                      borderRadius: '16px',
+                      padding: '2px 8px'
+                    }}>
+                      <IconButton
+                        size="small"
+                        onClick={handlePrevCombination}
+                        sx={{
+                          padding: '4px',
+                          color: theme.colors.text.light,
+                          '&:hover': {
+                            backgroundColor: 'rgba(255,255,255,0.2)'
+                          }
+                        }}
+                      >
+                        <ArrowBack fontSize="small" />
+                      </IconButton>
+                      <Typography sx={{
+                        color: theme.colors.text.light,
+                        fontWeight: 500,
+                        fontSize: '0.85rem'
+                      }}>
+                        {currentCombinationIndex + 1} / {filteredCombinations.length}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={handleNextCombination}
+                        sx={{
+                          padding: '4px',
+                          color: theme.colors.text.light,
+                          '&:hover': {
+                            backgroundColor: 'rgba(255,255,255,0.2)'
+                          }
+                        }}
+                      >
+                        <ArrowForward fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ) : combinations.length > 0 ? (
+                    <Typography sx={{
+                      color: theme.colors.text.light,
+                      fontSize: '0.85rem',
+                      backgroundColor: 'rgba(255,255,255,0.1)',
+                      borderRadius: '16px',
+                      padding: '4px 12px'
+                    }}>
+                      Uygun kombinasyon bulunamadı
+                    </Typography>
+                  ) : null}
+                </Box>
+              </Box>
+              
+              {/* Boş Gün Seçici */}
+              <EmptyDaySelector />
             </Box>
 
-            {/* Schedule Table */}
-            <TableContainer sx={{
-              flex: 1,
-              height: 'calc(100% - 52px)',
-              '&::-webkit-scrollbar': {
-                width: '6px',
-                height: '6px'
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'rgba(0,0,0,0.05)'
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: theme.colors.primary,
-                borderRadius: '3px',
-                opacity: 0.5,
-                '&:hover': {
-                  opacity: 0.7
+            {/* Schedule Table - ref eklendi */}
+            <Box ref={scheduleRef} sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <TableContainer sx={{
+                flex: 1,
+                height: 'calc(100% - 52px)',
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                  height: '6px'
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: 'rgba(0,0,0,0.05)'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: theme.colors.primary,
+                  borderRadius: '3px',
+                  opacity: 0.5,
+                  '&:hover': {
+                    opacity: 0.7
+                  }
                 }
-              }
-            }}>
-              <Table size="small" stickyHeader sx={{ 
-                height: '100%',
-                tableLayout: 'fixed',
-                minWidth: 'auto'
               }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{
-                      background: theme.gradients.primary,
-                      color: theme.colors.text.light,
-                      fontWeight: 600,
-                      textAlign: 'center',
-                      width: '60px',
-                      minWidth: '60px',
-                      position: 'sticky',
-                      left: 0,
-                      zIndex: 3,
-                      padding: '6px 2px',
-                      fontSize: '0.75rem'
-                    }}>
-                      Saat
-                    </TableCell>
-                    {DAYS.map(day => (
-                      <TableCell key={day} sx={{
+                <Table size="small" stickyHeader sx={{ 
+                  height: '100%',
+                  tableLayout: 'fixed',
+                  minWidth: 'auto'
+                }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{
                         background: theme.gradients.primary,
                         color: theme.colors.text.light,
                         fontWeight: 600,
                         textAlign: 'center',
-                        padding: '6px 2px',
-                        fontSize: '0.75rem',
-                        width: 'calc((100% - 60px) / 6)',
-                        minWidth: '90px'
-                      }}>
-                        {day}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {HOURS.map(hour => (
-                    <TableRow key={hour}>
-                      <TableCell sx={{
+                        width: '60px',
+                        minWidth: '60px',
                         position: 'sticky',
                         left: 0,
-                        zIndex: 2,
-                        background: theme.colors.surface,
-                        fontWeight: 500,
-                        textAlign: 'center',
-                        borderRight: '1px solid rgba(0,0,0,0.1)',
-                        padding: '2px',
-                        height: '40px',
+                        zIndex: 3,
+                        padding: '6px 2px',
                         fontSize: '0.75rem'
                       }}>
-                        {`${hour}:00`}
+                        Saat
                       </TableCell>
                       {DAYS.map(day => (
-                        <TableCell
-                          key={day}
-                          onClick={() => handleTimeSlotClick(day, hour)}
-                          sx={{
-                            padding: '2px',
-                            height: '40px',
-                            border: '1px solid rgba(0,0,0,0.1)',
-                            cursor: 'pointer',
-                            backgroundColor: blockedTimeSlots.includes(`${day}-${hour}`)
-                              ? `${theme.colors.secondary}11`
-                              : 'transparent',
-                            transition: theme.transitions.fast,
-                            '&:hover': {
-                              backgroundColor: blockedTimeSlots.includes(`${day}-${hour}`)
-                                ? `${theme.colors.secondary}22`
-                                : 'rgba(0,0,0,0.02)'
-                            }
-                          }}
-                        >
-                          {renderTimeSlot(day, hour, filteredCombinations[currentCombinationIndex] || [])}
+                        <TableCell key={day} sx={{
+                          background: theme.gradients.primary,
+                          color: theme.colors.text.light,
+                          fontWeight: 600,
+                          textAlign: 'center',
+                          padding: '6px 2px',
+                          fontSize: '0.75rem',
+                          width: 'calc((100% - 60px) / 6)',
+                          minWidth: '90px'
+                        }}>
+                          {day}
                         </TableCell>
                       ))}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {HOURS.map(hour => (
+                      <TableRow key={hour}>
+                        <TableCell sx={{
+                          position: 'sticky',
+                          left: 0,
+                          zIndex: 2,
+                          background: theme.colors.surface,
+                          fontWeight: 500,
+                          textAlign: 'center',
+                          borderRight: '1px solid rgba(0,0,0,0.1)',
+                          padding: '2px',
+                          height: '40px',
+                          fontSize: '0.75rem'
+                        }}>
+                          {`${hour}:00`}
+                        </TableCell>
+                        {DAYS.map(day => (
+                          <TableCell
+                            key={day}
+                            onClick={() => handleTimeSlotClick(day, hour)}
+                            sx={{
+                              padding: '2px',
+                              height: '40px',
+                              border: '1px solid rgba(0,0,0,0.1)',
+                              cursor: 'pointer',
+                              position: 'relative',
+                              transition: theme.transitions.fast,
+                              '&:hover': {
+                                backgroundColor: 'rgba(0,0,0,0.02)'
+                              }
+                            }}
+                          >
+                            {blockedTimeSlots.includes(`${day}-${hour}`) && (
+                              <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: 'rgba(255,255,255,0.7)',
+                                zIndex: 1
+                              }}>
+                                <CloseIcon sx={{ 
+                                  color: theme.colors.secondary,
+                                  fontSize: '1.2rem',
+                                  opacity: 0.7
+                                }} />
+                              </Box>
+                            )}
+                            {renderTimeSlot(day, hour, filteredCombinations[currentCombinationIndex] || [])}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
           </Paper>
         </Grid>
 
