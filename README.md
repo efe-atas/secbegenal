@@ -81,7 +81,7 @@ After creating the production build, upload the contents of the `build` folder t
 
 ## 🖼️ Example Screenshot
 
-![TED University Course Selection System Screenshot](./public/screenshot.png)
+![TED University Course Selection System Screenshot](./screenshots/image.png)
 
 ---
 
