@@ -39,7 +39,7 @@ import {
 } from '@mui/icons-material';
 import Papa from 'papaparse';
 import html2canvas from 'html2canvas';
-
+import { Analytics } from "@vercel/analytics/react"
 const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 9); // 9:00 - 21:00
 
@@ -1394,6 +1394,7 @@ function App() {
                 </Table>
               </TableContainer>
             </Box>
+            <Analytics />
           </Paper>
         </Grid>
 
