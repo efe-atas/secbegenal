@@ -39,7 +39,8 @@ import {
 } from '@mui/icons-material';
 import Papa from 'papaparse';
 import html2canvas from 'html2canvas';
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/react";
+import { csvData } from './coursesData.js';
 const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 9); // 9:00 - 21:00
 
@@ -208,23 +209,20 @@ function App() {
 
   useEffect(() => {
     // CSV dosyasını oku
-    fetch('/Courses.csv')
-      .then(response => response.text())
-      .then(csvData => {
-        const results = Papa.parse(csvData, { header: true });
-        const courseData = results.data.filter(course => course.Code && course.Name); // Boş satırları filtrele
-        setCourses(courseData);
-        setFilteredCourses(courseData);
+    try {
+      const results = Papa.parse(csvData, { header: true });
+      const courseData = results.data.filter(course => course.Code && course.Name); // Boş satırları filtrele
+      setCourses(courseData);
+      setFilteredCourses(courseData);
 
-        // Benzersiz hocaları ve sectionları çıkar
-        const uniqueLecturers = [...new Set(courseData.map(course => course.Lecturer))].filter(Boolean);
-        const uniqueSections = [...new Set(courseData.map(course => course.Section))].filter(Boolean);
-        setLecturers(uniqueLecturers);
-        setSections(uniqueSections);
-      })
-      .catch(error => {
-        console.error('CSV okuma hatası:', error);
-      });
+      // Benzersiz hocaları ve sectionları çıkar
+      const uniqueLecturers = [...new Set(courseData.map(course => course.Lecturer))].filter(Boolean);
+      const uniqueSections = [...new Set(courseData.map(course => course.Section))].filter(Boolean);
+      setLecturers(uniqueLecturers);
+      setSections(uniqueSections);
+    } catch (error) {
+      console.error('CSV okuma hatası:', error);
+    }
   }, []);
 
   useEffect(() => {
