@@ -204,6 +204,7 @@ function App() {
   const [allowConflicts, setAllowConflicts] = useState(false); // Çakışmalara izin verme durumu
   const [desiredEmptyDays, setDesiredEmptyDays] = useState(0);
   const scheduleRef = useRef(null);
+  const lastUpdated = useMemo(() => new Date().toLocaleDateString('tr-TR'), []);
 
   useEffect(() => {
     // CSV dosyasını oku
@@ -426,19 +427,22 @@ function App() {
               }}
               sx={{
                 flex: 1,
-                backgroundColor: `${courseColors[course.Code]}33`,
-                padding: '2px',
-                borderRadius: '4px',
+                background: `linear-gradient(180deg, ${courseColors[course.Code]}33, ${courseColors[course.Code]}22)`,
+                border: `1px solid rgba(0,0,0,0.06)`,
+                padding: '2px 4px',
+                borderRadius: '6px',
                 fontSize: '0.75rem',
                 fontFamily: '"Inter", sans-serif',
                 display: 'flex',
                 flexDirection: 'column',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
+                backdropFilter: 'saturate(140%) blur(2px)',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.06)',
                 '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  backgroundColor: `${courseColors[course.Code]}55`,
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 10px 18px rgba(0,0,0,0.10)',
+                  background: `linear-gradient(180deg, ${courseColors[course.Code]}44, ${courseColors[course.Code]}22)`,
                   zIndex: 1
                 }
               }}>
@@ -458,7 +462,7 @@ function App() {
                 <br />
                 <span style={{ 
                   fontSize: '0.65rem', 
-                  fontWeight: 500,
+                  fontWeight: 600,
                   color: theme.colors.text.secondary
                 }}>
                   {course.Room}
@@ -968,16 +972,30 @@ function App() {
       animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
     }}>
       {/* Son Güncelleme Tarihi */}
-      <Typography sx={{
+      <Box sx={{
         position: 'absolute',
-        top: 8,
-        left: 16,
-        fontSize: '0.75rem',
-        color: theme.colors.text.secondary,
-        fontStyle: 'italic'
+        top: 12,
+        right: 16,
+        px: 1.5,
+        py: 0.5,
+        borderRadius: '999px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        backgroundColor: 'rgba(255,255,255,0.6)',
+        backdropFilter: 'saturate(160%) blur(8px)',
+        boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+        border: '1px solid rgba(0,0,0,0.06)'
       }}>
-        Son güncelleme: 04/09/2025
-      </Typography>
+        <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: theme.colors.secondary }} />
+        <Typography sx={{
+          fontSize: '0.7rem',
+          color: theme.colors.text.secondary,
+          fontWeight: 600
+        }}>
+          Güncellendi: {lastUpdated}
+        </Typography>
+      </Box>
 
       {/* Header Section */}
       <Box sx={{
@@ -992,13 +1010,16 @@ function App() {
         animation: 'slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
       }}>
         <Typography variant="h3" sx={{
-          color: theme.colors.primary,
           fontWeight: 800,
           fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
           mb: 0.5,
           fontFamily: '"Poppins", sans-serif',
           position: 'relative',
           display: 'inline-block',
+          backgroundImage: theme.gradients.mixed,
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          color: 'transparent',
           '&::after': {
             content: '""',
             position: 'absolute',
@@ -1017,6 +1038,56 @@ function App() {
         }}>
           TEDU Ders Programı
         </Typography>
+        <Box sx={{
+          mt: 1,
+          mx: 'auto',
+          width: '100%',
+          maxWidth: 920,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1,
+          px: 1.5,
+          py: 0.75,
+          backgroundColor: 'rgba(255,255,255,0.6)',
+          border: '1px solid rgba(0,0,0,0.06)',
+          borderRadius: '999px',
+          backdropFilter: 'saturate(160%) blur(8px)'
+        }}>
+          <Typography sx={{ fontSize: '0.8rem', color: theme.colors.text.secondary }}>
+            İpuçları:
+          </Typography>
+          <Box sx={{
+            px: 1,
+            py: 0.3,
+            fontSize: '0.75rem',
+            borderRadius: '999px',
+            backgroundColor: 'rgba(0,35,121,0.08)',
+            border: '1px solid rgba(0,35,121,0.15)'
+          }}>
+            ← / → kombinasyonlar arasında geçiş
+          </Box>
+          <Box sx={{
+            px: 1,
+            py: 0.3,
+            fontSize: '0.75rem',
+            borderRadius: '999px',
+            backgroundColor: 'rgba(212,46,18,0.08)',
+            border: '1px solid rgba(212,46,18,0.15)'
+          }}>
+            Alt + R tüm seçimleri temizler
+          </Box>
+          <Box sx={{
+            px: 1,
+            py: 0.3,
+            fontSize: '0.75rem',
+            borderRadius: '999px',
+            backgroundColor: 'rgba(0,0,0,0.04)',
+            border: '1px solid rgba(0,0,0,0.08)'
+          }}>
+            Hücreye tıklayarak zaman blokla
+          </Box>
+        </Box>
       </Box>
 
       {/* Main Content */}
@@ -1025,9 +1096,11 @@ function App() {
         <Grid item xs={12} md={3} sx={{ height: '100%' }}>
           <Paper elevation={0} sx={{
             p: 2,
-            backgroundColor: theme.colors.surface,
+            backgroundColor: 'rgba(255,255,255,0.75)',
+            backdropFilter: 'saturate(160%) blur(10px)',
             borderRadius: theme.borderRadius.large,
-            border: '1px solid rgba(0,0,0,0.1)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.06)',
             transition: theme.transitions.default,
             height: '100%',
             display: 'flex',
@@ -1047,14 +1120,14 @@ function App() {
                     <SearchIcon sx={{ color: theme.colors.text.secondary, mr: 1 }} />
                   ),
                   sx: {
-                    borderRadius: theme.borderRadius.medium,
-                    backgroundColor: 'rgba(0,0,0,0.02)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0,0,0,0.04)'
-                    },
-                    '& fieldset': {
-                      borderColor: 'rgba(0,0,0,0.1)'
-                    }
+                    borderRadius: '999px',
+                    backgroundColor: 'rgba(255,255,255,0.7)',
+                    backdropFilter: 'saturate(160%) blur(8px)',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.06)',
+                    transition: 'all 0.2s ease',
+                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.85)' },
+                    '&.Mui-focused': { boxShadow: '0 10px 24px rgba(0,0,0,0.10)' },
+                    '& fieldset': { borderColor: 'rgba(0,0,0,0.06)' }
                   }
                 }}
               />
@@ -1064,7 +1137,7 @@ function App() {
             <Box sx={{
               flex: 1,
               overflowY: 'auto',
-              maxHeight: '650px', // Maksimum yüksekliği artırdım
+              maxHeight: '650px',
               pr: 1,
               '&::-webkit-scrollbar': {
                 width: '6px'
@@ -1091,38 +1164,66 @@ function App() {
                     key={index}
                     onClick={() => handleCourseSelect(course)}
                     sx={{
-                      p: 2,
-                      mb: 1,
-                      borderRadius: theme.borderRadius.medium,
-                      backgroundColor: selectedCourseCodes.includes(course.Code)
-                        ? `${courseColors[course.Code]}22`
-                        : 'transparent',
+                      p: 1.5,
+                      mb: 0.5,
+                      borderRadius: theme.borderRadius.small,
+                      background: selectedCourseCodes.includes(course.Code)
+                        ? `linear-gradient(90deg, ${courseColors[course.Code]}22, ${courseColors[course.Code]}11)`
+                        : 'linear-gradient(90deg, rgba(0,0,0,0.02), rgba(0,0,0,0))',
                       cursor: 'pointer',
                       transition: theme.transitions.fast,
-                      border: '1px solid rgba(0,0,0,0.1)',
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      borderLeft: selectedCourseCodes.includes(course.Code) 
+                        ? `4px solid ${courseColors[course.Code]}` 
+                        : '4px solid transparent',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
                       '&:hover': {
-                        transform: 'translateX(4px)',
-                        backgroundColor: selectedCourseCodes.includes(course.Code)
-                          ? `${courseColors[course.Code]}33`
-                          : 'rgba(0,0,0,0.02)',
-                        boxShadow: theme.shadows.small
+                        transform: 'translateX(2px)',
+                        background: selectedCourseCodes.includes(course.Code)
+                          ? `linear-gradient(90deg, ${courseColors[course.Code]}33, ${courseColors[course.Code]}11)`
+                          : 'linear-gradient(90deg, rgba(0,0,0,0.04), rgba(0,0,0,0))',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
                       }
                     }}
                   >
-                    <Typography sx={{
-                      fontWeight: 600,
-                      color: theme.colors.text.primary,
-                      fontSize: '0.9rem',
-                      mb: 0.5
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{
+                        fontWeight: 600,
+                        color: theme.colors.text.primary,
+                        fontSize: '0.85rem',
+                        lineHeight: 1.2,
+                        mb: 0.25
+                      }}>
+                        {course.Code}
+                      </Typography>
+                      <Typography sx={{
+                        fontSize: '0.75rem',
+                        color: theme.colors.text.secondary,
+                        lineHeight: 1.2,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {course.Name}
+                      </Typography>
+                    </Box>
+                    <Box sx={{
+                      ml: 1,
+                      px: 0.75,
+                      py: 0.25,
+                      fontSize: '0.65rem',
+                      borderRadius: '999px',
+                      backgroundColor: `${courseColors[course.Code] || theme.colors.primary}22`,
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      minWidth: '32px',
+                      textAlign: 'center',
+                      fontWeight: 600
                     }}>
-                      {course.Code}
-                    </Typography>
-                    <Typography sx={{
-                      fontSize: '0.8rem',
-                      color: theme.colors.text.secondary
-                    }}>
-                      {course.Name}
-                    </Typography>
+                      {courses.filter(c => c.Code === course.Code).length}
+                    </Box>
                   </Box>
                 ))}
             </Box>
@@ -1132,9 +1233,11 @@ function App() {
         {/* Center Panel: Weekly Schedule */}
         <Grid item xs={12} md={6} sx={{ height: '100%' }}>
           <Paper elevation={0} sx={{
-            backgroundColor: theme.colors.surface,
+            backgroundColor: 'rgba(255,255,255,0.75)',
+            backdropFilter: 'saturate(160%) blur(10px)',
             borderRadius: theme.borderRadius.large,
-            border: '1px solid rgba(0,0,0,0.1)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.06)',
             overflow: 'hidden',
             height: '100%',
             display: 'flex',
@@ -1196,17 +1299,19 @@ function App() {
                   {/* Ekran görüntüsü alma butonu */}
                   <Button
                     size="small"
-                    variant="outlined"
+                    variant="contained"
                     onClick={handleScreenshot}
                     sx={{
                       minWidth: 'auto',
                       padding: '4px 12px',
                       fontSize: '0.75rem',
                       borderRadius: theme.borderRadius.medium,
-                      borderColor: 'rgba(255,255,255,0.5)',
+                      backgroundColor: 'rgba(255,255,255,0.2)',
                       color: theme.colors.text.light,
+                      boxShadow: '0 6px 16px rgba(0,0,0,0.18)',
                       '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.1)'
+                        backgroundColor: 'rgba(255,255,255,0.28)',
+                        transform: 'translateY(-1px)'
                       }
                     }}
                   >
@@ -1302,9 +1407,11 @@ function App() {
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{
-                        background: theme.gradients.primary,
+                        background: 'rgba(0,35,121,0.85)',
+                        backdropFilter: 'saturate(160%) blur(6px)',
                         color: theme.colors.text.light,
-                        fontWeight: 600,
+                        fontWeight: 700,
+                        letterSpacing: 0.2,
                         textAlign: 'center',
                         width: '60px',
                         minWidth: '60px',
@@ -1312,20 +1419,24 @@ function App() {
                         left: 0,
                         zIndex: 3,
                         padding: '6px 2px',
-                        fontSize: '0.75rem'
+                        fontSize: '0.72rem',
+                        borderBottom: '1px solid rgba(255,255,255,0.25)'
                       }}>
                         Saat
                       </TableCell>
                       {DAYS.map(day => (
                         <TableCell key={day} sx={{
-                          background: theme.gradients.primary,
+                          background: 'rgba(0,35,121,0.85)',
+                          backdropFilter: 'saturate(160%) blur(6px)',
                           color: theme.colors.text.light,
-                          fontWeight: 600,
+                          fontWeight: 700,
+                          letterSpacing: 0.2,
                           textAlign: 'center',
                           padding: '6px 2px',
-                          fontSize: '0.75rem',
+                          fontSize: '0.72rem',
                           width: 'calc((100% - 60px) / 6)',
-                          minWidth: '90px'
+                          minWidth: '90px',
+                          borderBottom: '1px solid rgba(255,255,255,0.25)'
                         }}>
                           {day}
                         </TableCell>
@@ -1361,7 +1472,9 @@ function App() {
                               position: 'relative',
                               transition: theme.transitions.fast,
                               '&:hover': {
-                                backgroundColor: 'rgba(0,0,0,0.02)'
+                                backgroundColor: 'rgba(0,0,0,0.02)',
+                                outline: '2px solid rgba(0,35,121,0.15)',
+                                outlineOffset: '-2px'
                               }
                             }}
                           >
@@ -1375,8 +1488,10 @@ function App() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                backgroundColor: 'rgba(255,255,255,0.7)',
-                                zIndex: 1
+                                backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.75) 100%)',
+                                backdropFilter: 'saturate(160%) blur(2px)',
+                                zIndex: 1,
+                                border: '1px dashed rgba(212,46,18,0.35)'
                               }}>
                                 <CloseIcon sx={{ 
                                   color: theme.colors.secondary,
@@ -1402,9 +1517,11 @@ function App() {
         <Grid item xs={12} md={3} sx={{ height: '100%' }}>
           <Paper elevation={0} sx={{
             p: 2,
-            backgroundColor: theme.colors.surface,
+            backgroundColor: 'rgba(255,255,255,0.75)',
+            backdropFilter: 'saturate(160%) blur(10px)',
             borderRadius: theme.borderRadius.large,
-            border: '1px solid rgba(0,0,0,0.1)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.06)',
             height: '100%',
             display: 'flex',
             flexDirection: 'column'
@@ -1527,10 +1644,13 @@ function App() {
                         onDelete={() => handleCourseRemove(code)}
                         size="small"
                         sx={{
-                          backgroundColor: `${courseColors[code]}22`,
+                          background: `linear-gradient(180deg, ${courseColors[code]}22, ${courseColors[code]}11)`,
                           color: theme.colors.text.primary,
-                          fontWeight: 500,
-                          borderRadius: theme.borderRadius.medium,
+                          fontWeight: 600,
+                          letterSpacing: 0.2,
+                          borderRadius: '12px',
+                          border: '1px solid rgba(0,0,0,0.06)',
+                          boxShadow: '0 6px 14px rgba(0,0,0,0.04)',
                           '& .MuiChip-deleteIcon': {
                             color: theme.colors.text.primary,
                             '&:hover': {
@@ -1538,7 +1658,8 @@ function App() {
                             }
                           },
                           '&:hover': {
-                            backgroundColor: `${courseColors[code]}33`
+                            transform: 'translateY(-1px)',
+                            background: `linear-gradient(180deg, ${courseColors[code]}33, ${courseColors[code]}11)`
                           }
                         }}
                       />
@@ -1732,6 +1853,35 @@ function App() {
         >
           {alertMessage}
         </Alert>
+      )}
+      {selectedCourseCodes.length > 0 && (
+        <Box sx={{
+          position: 'fixed',
+          right: 20,
+          bottom: 20,
+          zIndex: 1100
+        }}>
+          <Button
+            onClick={generateAllPossibleCombinations}
+            startIcon={<AutorenewIcon />}
+            variant="contained"
+            sx={{
+              px: 2.2,
+              py: 1.2,
+              borderRadius: '999px',
+              background: theme.gradients.mixed,
+              boxShadow: '0 14px 30px rgba(0,0,0,0.15)',
+              textTransform: 'none',
+              fontWeight: 600,
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.20)'
+              }
+            }}
+          >
+            Kombinasyonları Oluştur
+          </Button>
+        </Box>
       )}
     </Container>
   );
