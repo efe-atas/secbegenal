@@ -976,7 +976,7 @@ function App() {
         color: theme.colors.text.secondary,
         fontStyle: 'italic'
       }}>
-        Son güncelleme: 01/02/2025
+        Son güncelleme: 01/09/2025
       </Typography>
 
       {/* Header Section */}
