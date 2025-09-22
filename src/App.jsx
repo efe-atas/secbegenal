@@ -1034,7 +1034,7 @@ function App() {
             width: '100px'
           }
         }}>
-          TEDU Ders Programı
+          TEDU Ders Planlayıcı
         </Typography>
         <Box sx={{
           mt: 1,
