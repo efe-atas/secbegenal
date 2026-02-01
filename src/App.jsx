@@ -40,7 +40,7 @@ import {
 import Papa from 'papaparse';
 import html2canvas from 'html2canvas';
 import { Analytics } from "@vercel/analytics/react";
-import { csvData } from './coursesData.js';
+
 const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 9); // 9:00 - 21:00
 
@@ -208,21 +208,31 @@ function App() {
   const lastUpdated = useMemo(() => new Date().toLocaleDateString('tr-TR'), []);
 
   useEffect(() => {
-    // CSV dosyasını oku
-    try {
-      const results = Papa.parse(csvData, { header: true });
-      const courseData = results.data.filter(course => course.Code && course.Name); // Boş satırları filtrele
-      setCourses(courseData);
-      setFilteredCourses(courseData);
+    // CSV dosyasını public/Courses.csv'den yükle
+    const loadCourses = async () => {
+      try {
+        const res = await fetch('/Courses.csv');
+        const csvText = await res.text();
+        // İlk satır "Courses" etiketi, gerçek header ikinci satırda
+        const csvWithoutFirstLine = csvText.includes('\n') ? csvText.slice(csvText.indexOf('\n') + 1) : csvText;
+        const results = Papa.parse(csvWithoutFirstLine, {
+          header: true,
+          delimiter: ';',
+          skipEmptyLines: true
+        });
+        const courseData = (results.data || []).filter(course => course.Code && course.Name);
+        setCourses(courseData);
+        setFilteredCourses(courseData);
 
-      // Benzersiz hocaları ve sectionları çıkar
-      const uniqueLecturers = [...new Set(courseData.map(course => course.Lecturer))].filter(Boolean);
-      const uniqueSections = [...new Set(courseData.map(course => course.Section))].filter(Boolean);
-      setLecturers(uniqueLecturers);
-      setSections(uniqueSections);
-    } catch (error) {
-      console.error('CSV okuma hatası:', error);
-    }
+        const uniqueLecturers = [...new Set(courseData.map(course => course.Lecturer))].filter(Boolean);
+        const uniqueSections = [...new Set(courseData.map(course => course.Section))].filter(Boolean);
+        setLecturers(uniqueLecturers);
+        setSections(uniqueSections);
+      } catch (error) {
+        console.error('CSV okuma hatası:', error);
+      }
+    };
+    loadCourses();
   }, []);
 
   useEffect(() => {
