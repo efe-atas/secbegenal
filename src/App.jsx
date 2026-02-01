@@ -636,17 +636,13 @@ function App() {
         width: '100%',
         display: 'flex',
         alignItems: 'center',
-        gap: 2,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: theme.borderRadius.medium,
-        padding: '8px 16px'
+        gap: 1.5,
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        borderRadius: 1,
+        padding: '6px 12px'
       }}>
-        <Typography sx={{
-          color: theme.colors.text.light,
-          fontSize: '0.9rem',
-          minWidth: '120px'
-        }}>
-          Boş Gün: {desiredEmptyDays}
+        <Typography sx={{ color: '#fff', fontSize: '0.8rem', minWidth: 72 }}>
+          Boş gün: {desiredEmptyDays}
         </Typography>
         <Slider
           value={desiredEmptyDays}
@@ -743,144 +739,19 @@ function App() {
     const sections = getUniqueSections(code);
 
     return (
-      <Paper key={code} elevation={0} sx={{
-        p: 2,
-        borderRadius: theme.borderRadius.medium,
-        border: '1px solid rgba(0,0,0,0.1)',
-        backgroundColor: `${courseColors[code]}11`
-      }}>
-        {/* Ders Başlığı */}
-        <Box sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2
-        }}>
-          <Typography sx={{
-            fontWeight: 600,
-            color: theme.colors.text.primary,
-            fontSize: '1rem'
-          }}>
-            {code}
-          </Typography>
-          <Typography sx={{
-            color: theme.colors.text.secondary,
-            fontSize: '0.9rem',
-            maxWidth: '70%',
-            textAlign: 'right'
-          }}>
-            {course?.Name}
-          </Typography>
-        </Box>
-
-        {/* Section Seçimi */}
-        <Box sx={{
-          backgroundColor: 'rgba(0,0,0,0.02)',
-          borderRadius: theme.borderRadius.medium,
-          p: 2
-        }}>
-          <Typography variant="subtitle2" sx={{ 
-            mb: 1.5,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            color: theme.colors.text.primary,
-            fontWeight: 600
-          }}>
-            Section ve Öğretim Üyesi
-            <Typography variant="caption" sx={{ 
-              color: theme.colors.text.secondary,
-              fontWeight: 400
-            }}>
-              (Birden fazla seçilebilir)
-            </Typography>
-          </Typography>
-          <Box sx={{ 
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 1
-          }}>
-            <Chip
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  Tümü
-                  {filters.sections.length === 0 && (
-                    <CheckCircleIcon sx={{ 
-                      fontSize: '0.9rem',
-                      color: theme.colors.primary,
-                      ml: 0.5
-                    }} />
-                  )}
-                </Box>
-              }
-              onClick={() => handleCourseFilter(code, 'section', '')}
-              variant={filters.sections.length === 0 ? "filled" : "outlined"}
-              size="small"
-              sx={{
-                backgroundColor: filters.sections.length === 0
-                  ? `${courseColors[code]}33`
-                  : 'transparent',
-                borderColor: filters.sections.length === 0
-                  ? 'transparent'
-                  : 'rgba(0,0,0,0.1)',
-                color: filters.sections.length === 0
-                  ? theme.colors.text.primary
-                  : theme.colors.text.secondary,
-                fontWeight: filters.sections.length === 0 ? 500 : 400,
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  backgroundColor: filters.sections.length === 0
-                    ? `${courseColors[code]}44`
-                    : 'rgba(0,0,0,0.05)',
-                  transform: 'translateY(-1px)'
-                }
-              }}
-            />
-            {sections.map(section => {
-              const sectionInfo = courses.find(c => c.Code === code && c.Section === section);
-              const isSelected = filters.sections.includes(section);
-
-              return (
-                <Chip
-                  key={section}
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      {`${section} - ${sectionInfo?.Lecturer}`}
-                      {isSelected && (
-                        <CheckCircleIcon sx={{ 
-                          fontSize: '0.9rem',
-                          color: theme.colors.primary,
-                          ml: 0.5
-                        }} />
-                      )}
-                    </Box>
-                  }
-                  onClick={() => handleCourseFilter(code, 'section', section)}
-                  variant={isSelected ? "filled" : "outlined"}
-                  size="small"
-                  sx={{
-                    backgroundColor: isSelected
-                      ? `${courseColors[code]}33`
-                      : 'transparent',
-                    borderColor: isSelected
-                      ? 'transparent'
-                      : 'rgba(0,0,0,0.1)',
-                    color: isSelected
-                      ? theme.colors.text.primary
-                      : theme.colors.text.secondary,
-                    fontWeight: isSelected ? 500 : 400,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      backgroundColor: isSelected
-                        ? `${courseColors[code]}44`
-                        : 'rgba(0,0,0,0.05)',
-                      transform: 'translateY(-1px)'
-                    }
-                  }}
-                />
-              );
-            })}
-          </Box>
+      <Paper key={code} elevation={0} sx={{ p: 1.25, borderRadius: 1, border: '1px solid rgba(0,0,0,0.08)', bgcolor: `${courseColors[code]}0d` }}>
+        <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: theme.colors.text.primary, mb: 0.5 }}>{code}</Typography>
+        <Typography sx={{ fontSize: '0.75rem', color: theme.colors.text.secondary, mb: 1 }} noWrap>{course?.Name}</Typography>
+        <Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary, mb: 0.75 }}>Section / Öğretim üyesi</Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          <Chip label="Tümü" onClick={() => handleCourseFilter(code, 'section', '')} size="small" sx={{ fontSize: '0.7rem', height: 24, bgcolor: filters.sections.length === 0 ? `${courseColors[code]}22` : 'transparent', borderColor: 'rgba(0,0,0,0.12)' }} />
+          {sections.map(section => {
+            const sectionInfo = courses.find(c => c.Code === code && c.Section === section);
+            const isSelected = filters.sections.includes(section);
+            return (
+              <Chip key={section} label={`${section} · ${sectionInfo?.Lecturer}`} onClick={() => handleCourseFilter(code, 'section', section)} size="small" sx={{ fontSize: '0.7rem', height: 24, bgcolor: isSelected ? `${courseColors[code]}22` : 'transparent', borderColor: 'rgba(0,0,0,0.12)' }} />
+            );
+          })}
         </Box>
       </Paper>
     );
@@ -957,280 +828,114 @@ function App() {
 
   return (
     <Container maxWidth={false} sx={{ 
-      mt: 2, 
-      mb: 2, 
-      px: { xs: 1, sm: 2, md: 4 },
+      mt: 1.5, 
+      mb: 1.5, 
+      px: { xs: 1, sm: 2, md: 3 },
       backgroundColor: theme.colors.background,
       minHeight: '100vh',
       height: '98vh',
       display: 'flex',
       flexDirection: 'column',
       fontFamily: '"Inter", "Segoe UI", Roboto, sans-serif',
-      position: 'relative',
-      '@keyframes fadeIn': {
-        '0%': {
-          opacity: 0,
-          transform: 'translateY(20px)'
-        },
-        '100%': {
-          opacity: 1,
-          transform: 'translateY(0)'
-        }
-      },
-      animation: 'fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+      position: 'relative'
     }}>
-      {/* Son Güncelleme Tarihi */}
+      {/* Header: Başlık + Güncelleme */}
       <Box sx={{
-        position: 'absolute',
-        top: 12,
-        right: 16,
-        px: 1.5,
-        py: 0.5,
-        borderRadius: '999px',
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
-        backgroundColor: 'rgba(255,255,255,0.6)',
-        backdropFilter: 'saturate(160%) blur(8px)',
-        boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(0,0,0,0.06)'
+        justifyContent: 'space-between',
+        mb: 1.5,
+        px: 0.5
       }}>
-        <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: theme.colors.secondary }} />
         <Typography sx={{
-          fontSize: '0.7rem',
-          color: theme.colors.text.secondary,
-          fontWeight: 600
-        }}>
-          Güncellendi: {lastUpdated}
-        </Typography>
-      </Box>
-
-      {/* Header Section */}
-      <Box sx={{
-        position: 'relative',
-        zIndex: 1,
-        mb: 1,
-        textAlign: 'center',
-        '@keyframes slideDown': {
-          '0%': { transform: 'translateY(-20px)', opacity: 0 },
-          '100%': { transform: 'translateY(0)', opacity: 1 }
-        },
-        animation: 'slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
-      }}>
-        <Typography variant="h3" sx={{
-          fontWeight: 800,
-          fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-          mb: 0.5,
-          fontFamily: '"Poppins", sans-serif',
-          position: 'relative',
-          display: 'inline-block',
-          backgroundImage: theme.gradients.mixed,
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          color: 'transparent',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            bottom: -2,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '30px',
-            height: '3px',
-            background: theme.gradients.mixed,
-            borderRadius: '2px',
-            transition: theme.transitions.default
-          },
-          '&:hover::after': {
-            width: '100px'
-          }
+          fontWeight: 700,
+          fontSize: { xs: '1.1rem', sm: '1.35rem' },
+          color: theme.colors.primary,
+          fontFamily: '"Inter", sans-serif'
         }}>
           TEDU Ders Planlayıcı
         </Typography>
-        <Box sx={{
-          mt: 1,
-          mx: 'auto',
-          width: '100%',
-          maxWidth: 920,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-          px: 1.5,
-          py: 0.75,
-          backgroundColor: 'rgba(255,255,255,0.6)',
-          border: '1px solid rgba(0,0,0,0.06)',
-          borderRadius: '999px',
-          backdropFilter: 'saturate(160%) blur(8px)'
-        }}>
-          <Typography sx={{ fontSize: '0.8rem', color: theme.colors.text.secondary }}>
-            İpuçları:
-          </Typography>
-          <Box sx={{
-            px: 1,
-            py: 0.3,
-            fontSize: '0.75rem',
-            borderRadius: '999px',
-            backgroundColor: 'rgba(0,35,121,0.08)',
-            border: '1px solid rgba(0,35,121,0.15)'
-          }}>
-            ← / → kombinasyonlar arasında geçiş
-          </Box>
-          <Box sx={{
-            px: 1,
-            py: 0.3,
-            fontSize: '0.75rem',
-            borderRadius: '999px',
-            backgroundColor: 'rgba(212,46,18,0.08)',
-            border: '1px solid rgba(212,46,18,0.15)'
-          }}>
-            Alt + R tüm seçimleri temizler
-          </Box>
-          <Box sx={{
-            px: 1,
-            py: 0.3,
-            fontSize: '0.75rem',
-            borderRadius: '999px',
-            backgroundColor: 'rgba(0,0,0,0.04)',
-            border: '1px solid rgba(0,0,0,0.08)'
-          }}>
-            Hücreye tıklayarak zaman blokla
-          </Box>
-        </Box>
+        <Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary }}>
+          Güncelleme: {lastUpdated}
+        </Typography>
       </Box>
+      <Typography sx={{
+        fontSize: '0.75rem',
+        color: theme.colors.text.secondary,
+        mb: 1.5,
+        px: 0.5
+      }}>
+        ← / → kombinasyon geçişi · Alt+R temizler · Hücreye tıkla zaman blokla
+      </Typography>
 
       {/* Main Content */}
-      <Grid container spacing={2} sx={{ flex: 1, height: 'calc(100% - 100px)' }}>
-        {/* Left Panel: Course Search and Selection */}
+      <Grid container spacing={2} sx={{ flex: 1, minHeight: 0 }}>
+        {/* Left Panel: Ders listesi */}
         <Grid item xs={12} md={3} sx={{ height: '100%' }}>
           <Paper elevation={0} sx={{
-            p: 2,
-            backgroundColor: 'rgba(255,255,255,0.75)',
-            backdropFilter: 'saturate(160%) blur(10px)',
-            borderRadius: theme.borderRadius.large,
-            border: '1px solid rgba(0,0,0,0.06)',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.06)',
-            transition: theme.transitions.default,
+            p: 1.5,
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.medium,
+            border: '1px solid rgba(0,0,0,0.08)',
             height: '100%',
             display: 'flex',
             flexDirection: 'column'
           }}>
-            {/* Search Box */}
-            <Box sx={{ mb: 2 }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Ders Ara (Kod veya İsim)"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                variant="outlined"
-                InputProps={{
-                  startAdornment: (
-                    <SearchIcon sx={{ color: theme.colors.text.secondary, mr: 1 }} />
-                  ),
-                  sx: {
-                    borderRadius: '999px',
-                    backgroundColor: 'rgba(255,255,255,0.7)',
-                    backdropFilter: 'saturate(160%) blur(8px)',
-                    boxShadow: '0 6px 20px rgba(0,0,0,0.06)',
-                    transition: 'all 0.2s ease',
-                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.85)' },
-                    '&.Mui-focused': { boxShadow: '0 10px 24px rgba(0,0,0,0.10)' },
-                    '& fieldset': { borderColor: 'rgba(0,0,0,0.06)' }
-                  }
-                }}
-              />
-            </Box>
-
-            {/* Course List */}
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Ders ara (kod veya isim)"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              variant="outlined"
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ color: theme.colors.text.secondary, mr: 0.5, fontSize: '1.2rem' }} />,
+                sx: {
+                  borderRadius: 1,
+                  backgroundColor: theme.colors.background,
+                  '& fieldset': { borderColor: 'rgba(0,0,0,0.12)' }
+                }
+              }}
+              sx={{ mb: 1.5 }}
+            />
             <Box sx={{
               flex: 1,
               overflowY: 'auto',
-              maxHeight: '650px',
-              pr: 1,
-              '&::-webkit-scrollbar': {
-                width: '6px'
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'rgba(0,0,0,0.05)',
-                borderRadius: '3px'
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: theme.colors.primary,
-                borderRadius: '3px',
-                opacity: 0.5,
-                '&:hover': {
-                  opacity: 0.7
-                }
-              }
+              minHeight: 0,
+              '&::-webkit-scrollbar': { width: 6 },
+              '&::-webkit-scrollbar-thumb': { background: '#ccc', borderRadius: 3 }
             }}>
               {filteredCourses
-                .filter((course, index, self) => 
-                  index === self.findIndex(c => c.Code === course.Code)
-                )
+                .filter((course, index, self) => index === self.findIndex(c => c.Code === course.Code))
                 .map((course, index) => (
                   <Box
                     key={index}
                     onClick={() => handleCourseSelect(course)}
                     sx={{
-                      p: 1.5,
+                      py: 1,
+                      px: 1.25,
                       mb: 0.5,
-                      borderRadius: theme.borderRadius.small,
-                      background: selectedCourseCodes.includes(course.Code)
-                        ? `linear-gradient(90deg, ${courseColors[course.Code]}22, ${courseColors[course.Code]}11)`
-                        : 'linear-gradient(90deg, rgba(0,0,0,0.02), rgba(0,0,0,0))',
+                      borderRadius: 1,
                       cursor: 'pointer',
-                      transition: theme.transitions.fast,
-                      border: '1px solid rgba(0,0,0,0.06)',
-                      borderLeft: selectedCourseCodes.includes(course.Code) 
-                        ? `4px solid ${courseColors[course.Code]}` 
-                        : '4px solid transparent',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      '&:hover': {
-                        transform: 'translateX(2px)',
-                        background: selectedCourseCodes.includes(course.Code)
-                          ? `linear-gradient(90deg, ${courseColors[course.Code]}33, ${courseColors[course.Code]}11)`
-                          : 'linear-gradient(90deg, rgba(0,0,0,0.04), rgba(0,0,0,0))',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
-                      }
+                      borderLeft: selectedCourseCodes.includes(course.Code)
+                        ? `3px solid ${courseColors[course.Code]}`
+                        : '3px solid transparent',
+                      bgcolor: selectedCourseCodes.includes(course.Code) ? `${courseColors[course.Code]}14` : 'transparent',
+                      '&:hover': { bgcolor: selectedCourseCodes.includes(course.Code) ? `${courseColors[course.Code]}22` : 'rgba(0,0,0,0.04)' }
                     }}
                   >
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{
-                        fontWeight: 600,
-                        color: theme.colors.text.primary,
-                        fontSize: '0.85rem',
-                        lineHeight: 1.2,
-                        mb: 0.25
-                      }}>
-                        {course.Code}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: theme.colors.text.primary }}>
+                          {course.Code}
+                        </Typography>
+                        <Typography noWrap sx={{ fontSize: '0.72rem', color: theme.colors.text.secondary }}>
+                          {course.Name}
+                        </Typography>
+                      </Box>
+                      <Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary, fontWeight: 500 }}>
+                        {courses.filter(c => c.Code === course.Code).length} section
                       </Typography>
-                      <Typography sx={{
-                        fontSize: '0.75rem',
-                        color: theme.colors.text.secondary,
-                        lineHeight: 1.2,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        {course.Name}
-                      </Typography>
-                    </Box>
-                    <Box sx={{
-                      ml: 1,
-                      px: 0.75,
-                      py: 0.25,
-                      fontSize: '0.65rem',
-                      borderRadius: '999px',
-                      backgroundColor: `${courseColors[course.Code] || theme.colors.primary}22`,
-                      border: '1px solid rgba(0,0,0,0.06)',
-                      minWidth: '32px',
-                      textAlign: 'center',
-                      fontWeight: 600
-                    }}>
-                      {courses.filter(c => c.Code === course.Code).length}
                     </Box>
                   </Box>
                 ))}
@@ -1238,155 +943,67 @@ function App() {
           </Paper>
         </Grid>
 
-        {/* Center Panel: Weekly Schedule */}
+        {/* Center: Haftalık program */}
         <Grid item xs={12} md={6} sx={{ height: '100%' }}>
           <Paper elevation={0} sx={{
-            backgroundColor: 'rgba(255,255,255,0.75)',
-            backdropFilter: 'saturate(160%) blur(10px)',
-            borderRadius: theme.borderRadius.large,
-            border: '1px solid rgba(0,0,0,0.06)',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.06)',
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.medium,
+            border: '1px solid rgba(0,0,0,0.08)',
             overflow: 'hidden',
             height: '100%',
             display: 'flex',
             flexDirection: 'column'
           }}>
-            {/* Schedule Header */}
-            <Box sx={{
-              p: 1.5,
-              background: theme.gradients.mixed,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexDirection: 'column',
-              gap: 1
-            }}>
+            {/* Program başlık + araçlar + boş gün (hepsi lacivert bölgede) */}
+            <Box sx={{ backgroundColor: theme.colors.primary }}>
               <Box sx={{
+                p: 1,
                 display: 'flex',
+                flexWrap: 'wrap',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                width: '100%'
+                gap: 1
               }}>
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2
-                }}>
-                  <Typography sx={{
-                    color: theme.colors.text.light,
-                    fontWeight: 600,
-                    fontSize: '1rem'
-                  }}>
-                    Haftalık Program
-                  </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                  <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>Haftalık Program</Typography>
                   <Button
                     size="small"
-                    variant={allowConflicts ? "contained" : "outlined"}
                     onClick={() => setAllowConflicts(!allowConflicts)}
                     sx={{
-                      minWidth: 'auto',
-                      padding: '4px 8px',
-                      fontSize: '0.75rem',
-                      borderRadius: theme.borderRadius.medium,
-                      backgroundColor: allowConflicts ? 'rgba(255,255,255,0.2)' : 'transparent',
-                      borderColor: 'rgba(255,255,255,0.5)',
-                      color: theme.colors.text.light,
-                      '&:hover': {
-                        backgroundColor: allowConflicts ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'
-                      }
+                      py: 0.25,
+                      px: 1,
+                      fontSize: '0.7rem',
+                      color: '#fff',
+                      borderColor: 'rgba(255,255,255,0.6)',
+                      '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.1)' }
                     }}
+                    variant="outlined"
                   >
-                    {allowConflicts ? "Çakışmalara İzin Veriliyor" : "Çakışmalara İzin Ver"}
+                    {allowConflicts ? 'Çakışmaya izin veriliyor' : 'Çakışmaya izin ver'}
                   </Button>
                 </Box>
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2
-                }}>
-                  {/* Ekran görüntüsü alma butonu */}
-                  <Button
-                    size="small"
-                    variant="contained"
-                    onClick={handleScreenshot}
-                    sx={{
-                      minWidth: 'auto',
-                      padding: '4px 12px',
-                      fontSize: '0.75rem',
-                      borderRadius: theme.borderRadius.medium,
-                      backgroundColor: 'rgba(255,255,255,0.2)',
-                      color: theme.colors.text.light,
-                      boxShadow: '0 6px 16px rgba(0,0,0,0.18)',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.28)',
-                        transform: 'translateY(-1px)'
-                      }
-                    }}
-                  >
-                    Programı Kaydet
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button size="small" onClick={handleScreenshot} sx={{ py: 0.25, px: 1, fontSize: '0.7rem', color: '#fff', bgcolor: 'rgba(255,255,255,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }}>
+                    Kaydet
                   </Button>
-                  {filteredCombinations.length > 0 ? (
-                    <Box sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                      borderRadius: '16px',
-                      padding: '2px 8px'
-                    }}>
-                      <IconButton
-                        size="small"
-                        onClick={handlePrevCombination}
-                        sx={{
-                          padding: '4px',
-                          color: theme.colors.text.light,
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.2)'
-                          }
-                        }}
-                      >
-                        <ArrowBack fontSize="small" />
-                      </IconButton>
-                      <Typography sx={{
-                        color: theme.colors.text.light,
-                        fontWeight: 500,
-                        fontSize: '0.85rem'
-                      }}>
-                        {currentCombinationIndex + 1} / {filteredCombinations.length}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={handleNextCombination}
-                        sx={{
-                          padding: '4px',
-                          color: theme.colors.text.light,
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.2)'
-                          }
-                        }}
-                      >
-                        <ArrowForward fontSize="small" />
-                      </IconButton>
+                  {filteredCombinations.length > 0 && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                      <IconButton size="small" onClick={handlePrevCombination} sx={{ color: '#fff', p: 0.25 }}><ArrowBack fontSize="small" /></IconButton>
+                      <Typography sx={{ color: '#fff', fontSize: '0.8rem', minWidth: 48, textAlign: 'center' }}>{currentCombinationIndex + 1} / {filteredCombinations.length}</Typography>
+                      <IconButton size="small" onClick={handleNextCombination} sx={{ color: '#fff', p: 0.25 }}><ArrowForward fontSize="small" /></IconButton>
                     </Box>
-                  ) : combinations.length > 0 ? (
-                    <Typography sx={{
-                      color: theme.colors.text.light,
-                      fontSize: '0.85rem',
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                      borderRadius: '16px',
-                      padding: '4px 12px'
-                    }}>
-                      Uygun kombinasyon bulunamadı
-                    </Typography>
-                  ) : null}
+                  )}
+                  {filteredCombinations.length === 0 && combinations.length > 0 && (
+                    <Typography sx={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.75rem' }}>Uygun kombinasyon yok</Typography>
+                  )}
                 </Box>
               </Box>
-              
-              {/* Boş Gün Seçici */}
-              <EmptyDaySelector />
+              <Box sx={{ px: 1, pb: 1 }}>
+                <EmptyDaySelector />
+              </Box>
             </Box>
 
-            {/* Schedule Table - ref eklendi */}
+            {/* Schedule Table */}
             <Box ref={scheduleRef} sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <TableContainer sx={{
                 flex: 1,
@@ -1415,36 +1032,32 @@ function App() {
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{
-                        background: 'rgba(0,35,121,0.85)',
-                        backdropFilter: 'saturate(160%) blur(6px)',
-                        color: theme.colors.text.light,
-                        fontWeight: 700,
-                        letterSpacing: 0.2,
+                        background: theme.colors.primary,
+                        color: '#fff',
+                        fontWeight: 600,
                         textAlign: 'center',
                         width: '60px',
                         minWidth: '60px',
                         position: 'sticky',
                         left: 0,
                         zIndex: 3,
-                        padding: '6px 2px',
-                        fontSize: '0.72rem',
-                        borderBottom: '1px solid rgba(255,255,255,0.25)'
+                        padding: '6px 4px',
+                        fontSize: '0.75rem',
+                        borderBottom: '1px solid rgba(255,255,255,0.2)'
                       }}>
                         Saat
                       </TableCell>
                       {DAYS.map(day => (
                         <TableCell key={day} sx={{
-                          background: 'rgba(0,35,121,0.85)',
-                          backdropFilter: 'saturate(160%) blur(6px)',
-                          color: theme.colors.text.light,
-                          fontWeight: 700,
-                          letterSpacing: 0.2,
+                          background: theme.colors.primary,
+                          color: '#fff',
+                          fontWeight: 600,
                           textAlign: 'center',
-                          padding: '6px 2px',
-                          fontSize: '0.72rem',
+                          padding: '6px 4px',
+                          fontSize: '0.75rem',
                           width: 'calc((100% - 60px) / 6)',
                           minWidth: '90px',
-                          borderBottom: '1px solid rgba(255,255,255,0.25)'
+                          borderBottom: '1px solid rgba(255,255,255,0.2)'
                         }}>
                           {day}
                         </TableCell>
@@ -1521,172 +1134,56 @@ function App() {
           </Paper>
         </Grid>
 
-        {/* Right Panel: Selected Courses and Filters */}
+        {/* Right Panel: Seçilen dersler */}
         <Grid item xs={12} md={3} sx={{ height: '100%' }}>
           <Paper elevation={0} sx={{
-            p: 2,
-            backgroundColor: 'rgba(255,255,255,0.75)',
-            backdropFilter: 'saturate(160%) blur(10px)',
-            borderRadius: theme.borderRadius.large,
-            border: '1px solid rgba(0,0,0,0.06)',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.06)',
+            p: 1.5,
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.medium,
+            border: '1px solid rgba(0,0,0,0.08)',
             height: '100%',
             display: 'flex',
             flexDirection: 'column'
           }}>
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              height: '100%'
-            }}>
-              <Typography variant="h6" sx={{
-                color: theme.colors.text.primary,
-                fontWeight: 600,
-                fontSize: '1rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                Seçilen Dersler
-                {selectedCourseCodes.length > 0 && (
-                  <Button
-                    size="small"
-                    color="error"
-                    variant="text"
-                    onClick={handleRemoveAllCourses}
-                    sx={{
-                      minWidth: 'auto',
-                      padding: '4px 8px',
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                      textTransform: 'none',
-                      '&:hover': {
-                        backgroundColor: `${theme.colors.secondary}11`
-                      }
-                    }}
-                  >
-                    Tümünü Kaldır
-                  </Button>
-                )}
-              </Typography>
-
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: theme.colors.text.primary }}>Seçilen dersler</Typography>
               {selectedCourseCodes.length > 0 && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={generateAllPossibleCombinations}
-                    startIcon={<AutorenewIcon />}
-                    size="small"
-                    sx={{
-                      background: theme.gradients.mixed,
-                      borderRadius: theme.borderRadius.medium,
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: theme.shadows.medium
-                      }
-                    }}
-                  >
-                    Kombinasyonları Oluştur ({selectedCourseCodes.length})
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={() => setShowFilters(!showFilters)}
-                    startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
-                    size="small"
-                    sx={{
-                      borderRadius: theme.borderRadius.medium,
-                      borderWidth: '2px',
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      '&:hover': {
-                        borderWidth: '2px',
-                        transform: 'translateY(-2px)',
-                        boxShadow: theme.shadows.small
-                      }
-                    }}
-                  >
-                    {showFilters ? "Filtreleri Gizle" : "Filtreleri Göster"}
-                  </Button>
-                </Box>
+                <Button size="small" color="error" variant="text" onClick={handleRemoveAllCourses} sx={{ minWidth: 'auto', px: 1, fontSize: '0.75rem', textTransform: 'none' }}>Tümünü kaldır</Button>
               )}
-
-              <Box sx={{
-                flex: 1,
-                overflowY: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1,
-                '&::-webkit-scrollbar': {
-                  width: '6px'
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: 'rgba(0,0,0,0.05)',
-                  borderRadius: '3px'
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  background: theme.colors.primary,
-                  borderRadius: '3px',
-                  opacity: 0.5,
-                  '&:hover': {
-                    opacity: 0.7
-                  }
-                }
-              }}>
-                {/* Selected Courses */}
-                <Box sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1
-                }}>
-                  {selectedCourseCodes.map(code => {
-                    const course = courses.find(c => c.Code === code);
-                    return (
-                      <Chip
-                        key={code}
-                        label={`${code} - ${course?.Name}`}
-                        onDelete={() => handleCourseRemove(code)}
-                        size="small"
-                        sx={{
-                          background: `linear-gradient(180deg, ${courseColors[code]}22, ${courseColors[code]}11)`,
-                          color: theme.colors.text.primary,
-                          fontWeight: 600,
-                          letterSpacing: 0.2,
-                          borderRadius: '12px',
-                          border: '1px solid rgba(0,0,0,0.06)',
-                          boxShadow: '0 6px 14px rgba(0,0,0,0.04)',
-                          '& .MuiChip-deleteIcon': {
-                            color: theme.colors.text.primary,
-                            '&:hover': {
-                              color: theme.colors.secondary
-                            }
-                          },
-                          '&:hover': {
-                            transform: 'translateY(-1px)',
-                            background: `linear-gradient(180deg, ${courseColors[code]}33, ${courseColors[code]}11)`
-                          }
-                        }}
-                      />
-                    );
-                  })}
-                </Box>
-
-                {/* Filters */}
-                {showFilters && selectedCourseCodes.length > 0 && (
-                  <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                    mt: 2
-                  }}>
-                    {selectedCourseCodes.map(code => renderFilters(code))}
-                  </Box>
-                )}
+            </Box>
+            {selectedCourseCodes.length > 0 && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mb: 1 }}>
+                <Button fullWidth variant="contained" size="small" onClick={generateAllPossibleCombinations} startIcon={<AutorenewIcon />} sx={{ bgcolor: theme.colors.primary, textTransform: 'none', py: 0.75 }}>
+                  Kombinasyonları oluştur ({selectedCourseCodes.length})
+                </Button>
+                <Button fullWidth variant="outlined" size="small" onClick={() => setShowFilters(!showFilters)} startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />} sx={{ textTransform: 'none', py: 0.5 }}>{showFilters ? 'Filtreleri gizle' : 'Filtreleri göster'}</Button>
               </Box>
+            )}
+            <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, '&::-webkit-scrollbar': { width: 6 }, '&::-webkit-scrollbar-thumb': { background: '#ccc', borderRadius: 3 } }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                {selectedCourseCodes.map(code => {
+                  const course = courses.find(c => c.Code === code);
+                  return (
+                    <Chip
+                      key={code}
+                      label={`${code} · ${course?.Name}`}
+                      onDelete={() => handleCourseRemove(code)}
+                      size="small"
+                      sx={{
+                        bgcolor: `${courseColors[code]}18`,
+                        color: theme.colors.text.primary,
+                        fontWeight: 500,
+                        borderRadius: 1,
+                        border: '1px solid rgba(0,0,0,0.06)',
+                        '& .MuiChip-deleteIcon': { fontSize: '1rem' }
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+              {showFilters && selectedCourseCodes.length > 0 && (
+                <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>{selectedCourseCodes.map(code => renderFilters(code))}</Box>
+              )}
             </Box>
           </Paper>
         </Grid>
@@ -1708,129 +1205,24 @@ function App() {
           vertical: 'center',
           horizontal: 'center',
         }}
-        sx={{
-          '& .MuiPopover-paper': {
-            borderRadius: theme.borderRadius.large,
-            overflow: 'hidden',
-            width: '320px',
-            animation: 'fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-          }
-        }}
+        sx={{ '& .MuiPopover-paper': { borderRadius: 1, overflow: 'hidden' } }}
       >
         {selectedCourseInfo && (
-          <Box>
-            <Box sx={{
-              p: 2,
-              background: theme.gradients.mixed,
-              color: theme.colors.text.light
-            }}>
-              <Typography variant="h6" sx={{
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                mb: 1
-              }}>
-                {selectedCourseInfo.Code}
-              </Typography>
-              <Typography variant="body2" sx={{
-                fontSize: '0.9rem',
-                opacity: 0.9
-              }}>
-                {selectedCourseInfo.Name}
-              </Typography>
+          <Box sx={{ width: 280 }}>
+            <Box sx={{ p: 1.5, bgcolor: theme.colors.primary, color: '#fff' }}>
+              <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>{selectedCourseInfo.Code}</Typography>
+              <Typography sx={{ fontSize: '0.8rem', opacity: 0.95 }}>{selectedCourseInfo.Name}</Typography>
             </Box>
-            <Box sx={{ p: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography variant="caption" sx={{
-                    color: theme.colors.text.secondary,
-                    display: 'block',
-                    mb: 0.5
-                  }}>
-                    Section
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {selectedCourseInfo.Section}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="caption" sx={{
-                    color: theme.colors.text.secondary,
-                    display: 'block',
-                    mb: 0.5
-                  }}>
-                    Öğretim Üyesi
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {selectedCourseInfo.Lecturer}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="caption" sx={{
-                    color: theme.colors.text.secondary,
-                    display: 'block',
-                    mb: 0.5
-                  }}>
-                    Kredi
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {selectedCourseInfo.Cr}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="caption" sx={{
-                    color: theme.colors.text.secondary,
-                    display: 'block',
-                    mb: 0.5
-                  }}>
-                    AKTS
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {selectedCourseInfo.ECTS}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{
-                    color: theme.colors.text.secondary,
-                    display: 'block',
-                    mb: 0.5
-                  }}>
-                    Derslik
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {selectedCourseInfo.Room}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{
-                    color: theme.colors.text.secondary,
-                    display: 'block',
-                    mb: 0.5
-                  }}>
-                    Zaman
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {selectedCourseInfo.Schedule}
-                  </Typography>
-                </Grid>
+            <Box sx={{ p: 1.5 }}>
+              <Grid container spacing={1.5}>
+                <Grid item xs={6}><Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary }}>Section</Typography><Typography sx={{ fontSize: '0.85rem', fontWeight: 500 }}>{selectedCourseInfo.Section}</Typography></Grid>
+                <Grid item xs={6}><Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary }}>Öğretim üyesi</Typography><Typography sx={{ fontSize: '0.85rem', fontWeight: 500 }}>{selectedCourseInfo.Lecturer}</Typography></Grid>
+                <Grid item xs={6}><Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary }}>Kredi</Typography><Typography sx={{ fontSize: '0.85rem', fontWeight: 500 }}>{selectedCourseInfo.Cr}</Typography></Grid>
+                <Grid item xs={6}><Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary }}>AKTS</Typography><Typography sx={{ fontSize: '0.85rem', fontWeight: 500 }}>{selectedCourseInfo.ECTS}</Typography></Grid>
+                <Grid item xs={12}><Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary }}>Derslik</Typography><Typography sx={{ fontSize: '0.85rem', fontWeight: 500 }}>{selectedCourseInfo.Room}</Typography></Grid>
+                <Grid item xs={12}><Typography sx={{ fontSize: '0.7rem', color: theme.colors.text.secondary }}>Zaman</Typography><Typography sx={{ fontSize: '0.85rem', fontWeight: 500 }}>{selectedCourseInfo.Schedule}</Typography></Grid>
               </Grid>
-              <Button
-                fullWidth
-                variant="contained"
-                color="error"
-                onClick={() => {
-                  handleCourseRemove(selectedCourseInfo.Code);
-                  setCourseInfoAnchorEl(null);
-                  setSelectedCourseInfo(null);
-                }}
-                sx={{
-                  mt: 2,
-                  borderRadius: theme.borderRadius.medium,
-                  textTransform: 'none',
-                  fontWeight: 500
-                }}
-              >
-                Dersi Kaldır
-              </Button>
+              <Button fullWidth variant="contained" color="error" size="small" onClick={() => { handleCourseRemove(selectedCourseInfo.Code); setCourseInfoAnchorEl(null); setSelectedCourseInfo(null); }} sx={{ mt: 1.5, textTransform: 'none' }}>Dersi kaldır</Button>
             </Box>
           </Box>
         )}
@@ -1838,58 +1230,9 @@ function App() {
 
       {/* Alert */}
       {showAlert && (
-        <Alert
-          severity={alertSeverity}
-          sx={{
-            position: 'fixed',
-            top: 20,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 9999,
-            minWidth: '300px',
-            borderRadius: theme.borderRadius.large,
-            boxShadow: theme.shadows.large,
-            animation: 'slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            '& .MuiAlert-icon': {
-              fontSize: '1.5rem'
-            },
-            '& .MuiAlert-message': {
-              fontSize: '0.95rem',
-              fontWeight: 500
-            }
-          }}
-        >
+        <Alert severity={alertSeverity} sx={{ position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, minWidth: 280, borderRadius: 1, boxShadow: 2 }}>
           {alertMessage}
         </Alert>
-      )}
-      {selectedCourseCodes.length > 0 && (
-        <Box sx={{
-          position: 'fixed',
-          right: 20,
-          bottom: 20,
-          zIndex: 1100
-        }}>
-          <Button
-            onClick={generateAllPossibleCombinations}
-            startIcon={<AutorenewIcon />}
-            variant="contained"
-            sx={{
-              px: 2.2,
-              py: 1.2,
-              borderRadius: '999px',
-              background: theme.gradients.mixed,
-              boxShadow: '0 14px 30px rgba(0,0,0,0.15)',
-              textTransform: 'none',
-              fontWeight: 600,
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.20)'
-              }
-            }}
-          >
-            Kombinasyonları Oluştur
-          </Button>
-        </Box>
       )}
     </Container>
   );
